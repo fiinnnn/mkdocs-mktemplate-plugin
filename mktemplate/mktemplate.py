@@ -1,7 +1,7 @@
 from mkdocs.plugins import BasePlugin
 import re
-from pathlib import Path
-from jinja2 import Template
+from os.path import join, dirname
+from jinja2 import Template, FileSystemLoader, Environment
 import yaml
 
 class MkTemplate(BasePlugin):
@@ -10,12 +10,11 @@ class MkTemplate(BasePlugin):
     def on_page_markdown(self, markdown, page, **kwargs):
 
         def include_tag(match):
-            file_path = Path('templates/' + match['filename'])
+            filename = match['filename']
 
-            if not file_path.exists():
-                raise FileNotFoundError(f'File \'{filename}\' not found')
-
-            template =  Template(file_path.read_text(encoding='utf8'))
+            templateLoader = FileSystemLoader(searchpath='templates')
+            templateEnv = Environment(loader=templateLoader)
+            template = templateEnv.get_template(filename)
 
             yml = yaml.safe_load(match['yaml'])
 
